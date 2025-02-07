@@ -37,9 +37,12 @@ while True:
             bits = bits + "1"
         elif data == 2:
             bits = bits + "0"
+        elif data == 0:
+            pass
         else:
-            bits = bits + "?"
+            bita = bits + "?" # shouldn't ever happen
         # Wait for either next bit or something on the fifo
+        data = 0
         while (sm.rx_fifo() == 0):
             current_time = time.ticks_ms()
             elapsed_time = time.ticks_diff(current_time, start_time)
@@ -48,7 +51,10 @@ while True:
         # check to see if we're here because of something in fifo or timeout
         if elapsed_time > 5:
             break			# timeout. We're done
-        data = sm.get()
+        if sm.rx_fifo() > 0:
+            data = sm.get()
+        else:
+            data = 0
     # we've time out -- that means we're at the end of a word
     print(f"Bits %s" % (bits))
 
