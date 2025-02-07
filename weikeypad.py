@@ -1,39 +1,48 @@
-import rp2
 from machine import Pin
 import time
+import rp2
 
-@rp2.asm_pio(in_shiftdir=rp2.PIO.SHIFT_RIGHT, autopush=True, push_thresh=32)
-def wiegand_pio():
-    wait(0, pin, 0)  # Wait for DATA0 to go low
-    in_(pins, 1)     # Shift in 1 bit from DATA0
-    wait(1, pin, 0)  # Wait for DATA0 to go high
-    wait(0, pin, 1)  # Wait for DATA1 to go low
-    in_(pins, 1)     # Shift in 1 bit from DATA1
-    wait(1, pin, 1)  # Wait for DATA1 to go high
-
-# Set up the state machine
-sm = rp2.StateMachine(0, wiegand_pio, freq=10000, in_base=Pin(2))
-
-# Enable the state machine
+# the PIO can only handle 32 bits, so we'll read one bit at a time here
+# to handle arbitrary length Weigand messages
+@rp2.asm_pio(set_init=PIO.IN_HIGH)
+def rx_weigand():
+    set(x, 3)					# we will compare our pins to b'00011' if not equal, one pin is set
+    label('wait_for_data')
+    in(pins, 2)					#read two pins
+    mov(isr, x)
+    jmp(x_not_y, 'bit_set')		# if it's not b'00011', then one pin is set
+    jmp('wait_for_data')		# if not, keep looking
+    label('bit_set')
+    push()
+    jmp('wait_for_data')
+    
+        
+# a bit is 40 microseconds wide, so we'll us a cycle rate of 10 microseconds so we
+# won't miss one
+sm = rp2.StateMachine(0, rx_weigand, freq=100000, in_base=Pin(0))
 sm.active(1)
 
-def decode_wiegand(data, bits):
-    if bits == 26:
-        facility = (data >> 17) & 0xFF
-        card_number = data & 0xFFFF
-        return facility, card_number
-    elif bits == 34:
-        card_number = data & 0xFFFFFFFF
-        return None, card_number
-    else:
-        return None, None
-
-# Main loop
 while True:
-    if sm.rx_fifo():
-        data = sm.get()
-        bits = 32  # Assuming 32-bit Wiegand data
-        facility, card_number = decode_wiegand(data, bits)
-        if card_number is not None:
-            print(f"Facility: {facility}, Card Number: {card_number}")
-    time.sleep(0.1)
+    bits = ""
+    data = sm.get()				# wait for a bit detected from the FIFO
+    start_time = time.ticks_ms()
+    while True:
+        match data:
+            case 1:
+                bits = bits + "1"
+            case 2:
+                bits = bits + "0"
+            case _:
+                bits = bits + "?"
+        # Wait for either next bit or something on the fifo
+        while (sm.rx_fifo() == 0):
+            current_time = time.ticks_ms()
+            elapsed_time = time.ticks_diff(current_time, start_time)
+            if elapsed_time > 5:
+                break
+       # check to see if we're here because of something in fifo or timeout
+       if elapsed_time > 5:
+            break			# timeout. We're done
+    # we've time out -- that means we're at the end of a word
+    print(f"Bits %s" % (bits))
+
