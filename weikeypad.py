@@ -1,5 +1,6 @@
 from machine import Pin
 import time
+from bitstring import Bitarray
 import rp2
 from rp2 import PIO
 
@@ -62,6 +63,20 @@ while True:
         if elapsed_time > 100:
             break
     # we've time out -- that means we're at the end of a word
+    value = int(bits, 2)
     print(f"Bits %s" % (bits))
+    print(f"Hex %s" % hex(value))
+    
+    # check parity if this is a 37-bit number
+    if len(bits) == 37:
+        a = bits[1:19].count('1')
+        parity_front = a % 2
+        b = bits[20:].count('1') + 1
+        parity_back = b % 2
+        print(f"Facility number = %s, Badge number = %s" % (a, b)
+        print(f"Parity bits should be %d and %d" % (parity_front, parity_back)
+              
+        
+        
 
 
