@@ -1,6 +1,5 @@
 from machine import Pin
 import time
-from bitstring import Bitarray
 import rp2
 from rp2 import PIO
 
@@ -52,6 +51,7 @@ def tx_weigand():
     nop() [8]               # 8
     jmp(x_dec, "loop")      # 1
     
+<<<<<<< HEAD
     
    
 class WeigandTranslator:
@@ -135,6 +135,17 @@ if __name__ == "__main__":
         wt.Transmit(bits)
               
         
+=======
+    # check parity if this is a 37-bit number
+    if len(bits) == 37:
+        a = bits[1:19]
+        parity_front = a.count('1') % 2
+        b = bits[20:]
+        parity_back = b.count('1') % 2
+        print(f"Facility number = %s, Badge number = %s" % (int(a,2), int(b,2)))
+        print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
+                      
+>>>>>>> 40fdbfbb28803550f2c49e05114a5a72f4e1e109
         
 
 
