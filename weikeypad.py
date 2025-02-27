@@ -39,11 +39,13 @@ def tx_weigand():
     pull()                  # 1
     mov(x, osr)             # 1
     jmp(not_x, "zero")      # 1
-    out(pins, 1)            # 1 set 1 pin high
+    mov(isr, 1)             # 1 
+    out(pins, 2)            # 1 set 1 pin high
     nop()        [3]        # 3
-    out(pins, 0)            # 1 set pin low
+    out(pins, 2)            # 1 set pin low
     jmp('wait2ms')          # 1 wait 2 milliseconds
     label('zero')
+    mov(isr, 2)
     out(pins, 2)            # 1 set zero pin high
     nop()        [3]        # 3
     label('wait2ms')        # 20 x 10 = 200 x 10 microseconds = 2 milliseconds
@@ -64,14 +66,15 @@ class WeigandTranslator:
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
-        pin14 = Pin(14, Pin.OUT)
-        pin15 = Pin(15, Pin.OUT)
+        pin14 = Pin(14, Pin.OUT, Pin.PULL_UP)
+        pin15 = Pin(15, Pin.OUT, Pin.PULL_UP)
         # start on PIO 1
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, out_base=pin14)
         self.smx.active(1)
         
     
     def Transmit(self, bits):
+        print("Transmit %s" % bits)
         for b in bits:
             # this blocks until space available, so no need to worry
             # about overflow
@@ -120,8 +123,8 @@ class WeigandTranslator:
             parity_front = a % 2
             b = bits[18:36].count('1') + 1
             parity_back = b % 2
-            print(f"Facility number = %s, Badge number = %s" % (a, b)
-            print(f"Parity bits should be %d and %d" % (parity_front, parity_back)
+            print(f"Facility number = %s, Badge number = %s" % (a, b))
+            print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
         return bits
        
 if __name__ == "__main__":
