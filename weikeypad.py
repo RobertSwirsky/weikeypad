@@ -36,23 +36,24 @@ def rx_weigand():  # set_init=[PIO.IN_HIGH, PIO.IN_HIGH]
     
 @rp2.asm_pio()
 def tx_weigand():
+    set(pins, 3)			# bring both pins high
+    wrap_target()
     pull()                  # 1
     mov(x, osr)             # 1
     jmp(not_x, "zero")      # 1
-    mov(isr, 1)             # 1 
-    out(pins, 2)            # 1 set 1 pin high
+    set(pins,2)             # 1  zero pin low, one pin high 
     nop()        [3]        # 3
-    out(pins, 2)            # 1 set pin low
     jmp('wait2ms')          # 1 wait 2 milliseconds
     label('zero')
-    mov(isr, 2)
-    out(pins, 2)            # 1 set zero pin high
+    set(pins, 1)            # 1 set zero pin high, one pin low
     nop()        [3]        # 3
     label('wait2ms')        # 20 x 10 = 200 x 10 microseconds = 2 milliseconds
+    set(pins, 3)            # both pins high
     set(x, 19)              # 1
     label("loop")
     nop() [8]               # 8
-    jmp(x_dec, "loop")      # 1    
+    jmp(x_dec, "loop")      # 1
+    wrap()
    
 class WeigandTranslator:
     def __init__(self):
@@ -66,8 +67,8 @@ class WeigandTranslator:
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
-        pin14 = Pin(14, Pin.OUT, Pin.PULL_UP)
-        pin15 = Pin(15, Pin.OUT, Pin.PULL_UP)
+        pin14 = Pin(14, Pin.OUT)
+        pin15 = Pin(15, Pin.OUT)
         # start on PIO 1
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, out_base=pin14)
         self.smx.active(1)
