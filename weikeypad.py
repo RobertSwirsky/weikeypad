@@ -7,13 +7,14 @@ from rp2 import PIO
 # bits are 40 microseconds wide
 # bits are 2 ms apart
 
-# bit 1     - even parity over bits 2 through 18
+# bit 1     - even parity 
 # bit 2-15  - Facility Code / Site ID
 # bit 16-36 - Card Id / Serial Number
-# bit 37    - Odd Parity over bits 19 through 36
+# bit 37    - Odd Parity 
 
 # the PIO can only handle 32 bits, so we'll read one bit at a time here
 # to handle arbitrary length Weigand messages
+
 @rp2.asm_pio()
 def rx_weigand():  # set_init=[PIO.IN_HIGH, PIO.IN_HIGH]
     set(x, 3)					# we will compare our pins to b'00011' if not equal, one pin is set
@@ -49,10 +50,7 @@ def tx_weigand():
     set(x, 19)              # 1
     label("loop")
     nop() [8]               # 8
-    jmp(x_dec, "loop")      # 1
-    
-<<<<<<< HEAD
-    
+    jmp(x_dec, "loop")      # 1    
    
 class WeigandTranslator:
     def __init__(self):
@@ -72,7 +70,6 @@ class WeigandTranslator:
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, out_base=pin14)
         self.smx.active(1)
         
-        
     
     def Transmit(self, bits):
         for b in bits:
@@ -81,7 +78,6 @@ class WeigandTranslator:
             self.smx.put(0 if b=='0' else 1)
         # sleep a millisecond 
         time.sleep(0.1)
-        
         
 
     def Receive(self):
@@ -134,18 +130,6 @@ if __name__ == "__main__":
         bits = wt.Receive()
         wt.Transmit(bits)
               
-        
-=======
-    # check parity if this is a 37-bit number
-    if len(bits) == 37:
-        a = bits[1:19]
-        parity_front = a.count('1') % 2
-        b = bits[20:]
-        parity_back = b.count('1') % 2
-        print(f"Facility number = %s, Badge number = %s" % (int(a,2), int(b,2)))
-        print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
-                      
->>>>>>> 40fdbfbb28803550f2c49e05114a5a72f4e1e109
         
 
 
