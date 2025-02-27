@@ -34,26 +34,26 @@ def rx_weigand():  # set_init=[PIO.IN_HIGH, PIO.IN_HIGH]
     jmp(x_not_y, 'wait_for_zero')
     jmp('wait_for_data')
     
-@rp2.asm_pio()
+@rp2.asm_pio(set_init=(rp2.PIO.OUT_LOW, rp2.PIO.OUT_LOW))
 def tx_weigand():
-    set(pins, 3)			# bring both pins high
-    wrap_target()
-    pull()                  # 1
-    mov(x, osr)             # 1
-    jmp(not_x, "zero")      # 1
-    set(pins,2)             # 1  zero pin low, one pin high 
-    nop()        [3]        # 3
-    jmp('wait2ms')          # 1 wait 2 milliseconds
-    label('zero')
-    set(pins, 1)            # 1 set zero pin high, one pin low
-    nop()        [3]        # 3
-    label('wait2ms')        # 20 x 10 = 200 x 10 microseconds = 2 milliseconds
-    set(pins, 3)            # both pins high
-    set(x, 19)              # 1
-    label("loop")
-    nop() [8]               # 8
-    jmp(x_dec, "loop")      # 1
-    wrap()
+     set(pins, 3)
+     wrap_target()
+     pull(block)             # 1
+     mov(x, osr)             # 1
+     jmp(not_x, "zero")      # 1
+     set(pins,2)             # 1  zero pin low, one pin high 
+     nop()        [3]        # 3
+     jmp('wait2ms')          # 1 wait 2 milliseconds
+     label('zero')
+     set(pins, 1)            # 1 set zero pin high, one pin low
+     nop()        [3]        # 3
+     label('wait2ms')        # 20 x 10 = 200 x 10 microseconds = 2 milliseconds
+     set(pins, 3)            # both pins high
+     set(x, 19)              # 1
+     label("loop")
+     nop() [8]               # 
+     jmp(x_dec, "loop")      # 1
+     wrap()
    
 class WeigandTranslator:
     def __init__(self):
@@ -67,10 +67,10 @@ class WeigandTranslator:
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
-        pin14 = Pin(14, Pin.OUT)
-        pin15 = Pin(15, Pin.OUT)
+        pin14 = Pin(12, Pin.OUT)
+        pin15 = Pin(13, Pin.OUT)
         # start on PIO 1
-        self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, out_base=pin14)
+        self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=Pin(12))
         self.smx.active(1)
         
     
