@@ -114,18 +114,22 @@ class WeigandTranslator:
             if elapsed_time > 100:
                 break
         # we've time out -- that means we're at the end of a word
-        value = int(bits, 2)
-        print(f"Bits %s" % (bits))
-        print(f"Hex %s" % hex(value))
-        
-        # check parity if this is a 37-bit number
-        if len(bits) == 37:
+        print(f"Received %d Bits: %s" % (len(bits), bits))
+        if len(bits) == 4:
+            value = int(bits, 2)
+            printf(f"Value = %s", (hex(value))
+        elif len(bits) == 37:
+            value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
+            printf("Value = %s", (hex(value))
             a = bits[1:18].count('1')
             parity_front = a % 2
             b = bits[18:36].count('1') + 1
             parity_back = b % 2
             print(f"Facility number = %s, Badge number = %s" % (a, b))
             print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
+        else:
+            value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
+            printf("Value = %s", (hex(value))
         return bits
        
 if __name__ == "__main__":
