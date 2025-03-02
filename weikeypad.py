@@ -64,6 +64,8 @@ class WeigandTranslator:
         # start on PIO 0
         self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin16)
         self.sm.active(1)
+        self.accumulatedBits = 0
+        self.accumulatedCount = 0
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
@@ -75,7 +77,7 @@ class WeigandTranslator:
         
     
     def Transmit(self, bits):
-        print("Transmit %s" % bits)
+        print(f"Transmit (%d) bits: %s" % (len(bits), bits))
         for b in bits:
             # this blocks until space available, so no need to worry
             # about overflow
@@ -83,7 +85,43 @@ class WeigandTranslator:
         # sleep a millisecond 
         time.sleep(0.1)
         
-
+    def AccumulateBits(self, bits):
+        value = int(bits, 2)
+        if value > 9:
+            # we've got a * or a # - stop accumulating
+            return False
+        else:
+            self.accumulatedBits = (self.accumulatedBits * 16) + value
+            self.accumulatedCount = self.accumulatedCount + 1
+            if self.accumulatedCount >= 6:
+                return False
+        return True
+               
+    def GetAccumulatedBits(self):
+        # shift it right one more to make room for checksum
+        a = self.accumulatedBits * 2
+        self.accumulatedBits = 0
+        self.accumulatedCount = 0
+        bits = (bin(a))[2:]
+        if len(bits) < 37:
+            zerosNeeded = 37 - len(bits)
+            bits = '0' * zerosNeeded + bits
+        return bits
+    
+    def CalculateParity(self, bits):
+        value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
+        print(f"Value = %s" % (hex(value)))
+        a = bits[1:18].count('1')
+        parity_front = a % 2
+        b = bits[18:36].count('1') + 1
+        parity_back = b % 2
+        print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
+        if parity_front == 1:
+            bits = '1' + bits[1:]
+        if parity_back == 1:
+            bits = bits[:-1] + '1'
+        return bits    
+    
     def Receive(self):
         bits = ""
         print("Waiting for a word")
@@ -117,25 +155,30 @@ class WeigandTranslator:
         print(f"Received %d Bits: %s" % (len(bits), bits))
         if len(bits) == 4:
             value = int(bits, 2)
-            printf(f"Value = %s", (hex(value))
+            print(f"Value = %s" % (hex(value)))
         elif len(bits) == 37:
             value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
-            printf("Value = %s", (hex(value))
+            print(f"Value = %s" % (hex(value)))
             a = bits[1:18].count('1')
             parity_front = a % 2
             b = bits[18:36].count('1') + 1
             parity_back = b % 2
-            print(f"Facility number = %s, Badge number = %s" % (a, b))
             print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
         else:
             value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
-            printf("Value = %s", (hex(value))
+            print(f"Value = %s", (hex(value)))
         return bits
        
 if __name__ == "__main__":
     wt = WeigandTranslator()
     while True:
         bits = wt.Receive()
+        if len(bits) == 4:       # is it a digit
+            while wt.AccumulateBits(bits):
+                bits = wt.Receive()
+                pass
+            bits = wt.GetAccumulatedBits()
+            bits = wt.CalculateParity(bits)
         wt.Transmit(bits)
               
         
