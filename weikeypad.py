@@ -91,7 +91,7 @@ class WeigandTranslator:
             # we've got a * or a # - stop accumulating
             return False
         else:
-            self.accumulatedBits = (self.accumulatedBits * 16) + value
+            self.accumulatedBits = (self.accumulatedBits * 10) + value
             self.accumulatedCount = self.accumulatedCount + 1
             if self.accumulatedCount >= 6:
                 return False
