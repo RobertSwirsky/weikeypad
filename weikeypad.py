@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import Pin, Timer
 import time
 import rp2
 from rp2 import PIO
@@ -75,7 +75,6 @@ class WeigandTranslator:
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=Pin(12))
         self.smx.active(1)
         
-    
     def Transmit(self, bits):
         print(f"Transmit (%d) bits: %s" % (len(bits), bits))
         for b in bits:
@@ -122,10 +121,21 @@ class WeigandTranslator:
             bits = bits[:-1] + '1'
         return bits    
     
-    def Receive(self):
+    def Receive(self, timeout):
         bits = ""
         print("Waiting for a word")
-        data = self.sm.get()				# wait for a bit detected from the FIFO
+        if timeout:
+            start_time = time.ticks_ms()
+            if self.sm.rx_fifo() > 0:
+                data = self.sm.get()
+            else:
+                # nothing in buffer -- see if we'eve timed out
+                current_time = time.ticks_ms()
+                elapsed_time = time.ticks_diff(current_time, start_time)
+                if elapsed_time > 6000:
+                    return -1
+        else:
+            data = self.sm.get()				# blocking wait for a bit detected from the FIFO
         start_time = time.ticks_ms()
         elapsed_time = 0
         while True:
@@ -172,14 +182,18 @@ class WeigandTranslator:
 if __name__ == "__main__":
     wt = WeigandTranslator()
     while True:
-        bits = wt.Receive()
-        if len(bits) == 4:       # is it a digit
+        timeout = False
+        bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
+        if len(bits) == 4:       # is it a digit 
             while wt.AccumulateBits(bits):
-                bits = wt.Receive()
-                pass
-            bits = wt.GetAccumulatedBits()
-            bits = wt.CalculateParity(bits)
-        wt.Transmit(bits)
+                bits = wt.Receive(timeout=True)       # timout in _n_ seconds if we stop getting digits
+                if (bits == -1):                      # we have a timeout
+                    timeout = True
+                    print("Timeout waiting for code")
+            if (!timeout)
+                bits = wt.GetAccumulatedBits()
+                bits = wt.CalculateParity(bits)
+        if (!timeout) wt.Transmit(bits)
               
         
 
