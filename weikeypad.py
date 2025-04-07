@@ -135,7 +135,9 @@ class WeigandTranslator:
                 if elapsed_time > 6000:
                     return -1
         else:
+            print("Blocking datga call")
             data = self.sm.get()				# blocking wait for a bit detected from the FIFO
+            print(f"Got data %d" % data)
         start_time = time.ticks_ms()
         elapsed_time = 0
         while True:
@@ -190,10 +192,11 @@ if __name__ == "__main__":
                 if (bits == -1):                      # we have a timeout
                     timeout = True
                     print("Timeout waiting for code")
-            if (!timeout)
+            if not timeout:
                 bits = wt.GetAccumulatedBits()
                 bits = wt.CalculateParity(bits)
-        if (!timeout) wt.Transmit(bits)
+        if not timeout:
+            wt.Transmit(bits)
               
         
 
