@@ -59,20 +59,20 @@ class WeigandTranslator:
     def __init__(self):
         # a bit is 40 microseconds wide, so we'll us a cycle rate of 1/2 microsecond for receiving
         # so we won't won't miss one. We may be able to slow this down
-        pin16 = Pin(16, Pin.IN, Pin.PULL_DOWN)
-        pin17 = Pin(17, Pin.IN, Pin.PULL_DOWN)
+        pin_IN_0 = Pin(0, Pin.IN, Pin.PULL_DOWN)
+        pin_IN_1 = Pin(1, Pin.IN, Pin.PULL_DOWN)
         # start on PIO 0
-        self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin16)
+        self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin_IN_0)
         self.sm.active(1)
         self.accumulatedBits = 0
         self.accumulatedCount = 0
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
-        pin14 = Pin(12, Pin.OUT)
-        pin15 = Pin(13, Pin.OUT)
+        pin_OUT_0 = Pin(27, Pin.OUT)
+        pin_OUT_1 = Pin(28, Pin.OUT)
         # start on PIO 1
-        self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=Pin(12))
+        self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=pin_OUT_0)
         self.smx.active(1)
         
     
