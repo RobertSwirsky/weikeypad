@@ -196,6 +196,8 @@ if __name__ == "__main__":
             if not timeout:
                 bits = wt.GetAccumulatedBits()
                 bits = wt.CalculateParity(bits)
+        # We get here if AccumulateBits returned false, we timeout
+        # or we scanned in a badge (in which case any accumulated bits are thrown out).
         if not timeout:
             wt.Transmit(bits)
         else:
