@@ -185,6 +185,7 @@ if __name__ == "__main__":
     wt = WeigandTranslator()
     while True:
         timeout = False
+        badge = False
         bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
         if len(bits) == 4:       # is it a digit 
             while wt.AccumulateBits(bits):
@@ -193,7 +194,13 @@ if __name__ == "__main__":
                     timeout = True
                     print("Timeout waiting for code")
                     break
-            if not timeout:
+                elif len(bits) > 4:
+                    # badge scan in the middle
+                    bits=wt.CalculateParity(bits)
+                    badge = True
+                    break
+            # if this is either a timeout or a badge, don't do this.
+            if not (timeout or badge):
                 bits = wt.GetAccumulatedBits()
                 bits = wt.CalculateParity(bits)
         # We get here if AccumulateBits returned false, we timeout
