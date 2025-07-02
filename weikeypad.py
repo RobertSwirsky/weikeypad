@@ -95,6 +95,11 @@ class WeigandTranslator:
             if self.accumulatedCount >= 6:
                 return False
         return True
+    
+    def ClearAccumulatedBits(self):
+        self.accumulatedBits = 0
+        self.accumulatedCount = 0
+        return True
                
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum
@@ -208,6 +213,7 @@ if __name__ == "__main__":
         if not timeout:
             wt.Transmit(bits)
         else:
+            wt.ClearAccumulatedBits()
             print("timeout")
               
         
