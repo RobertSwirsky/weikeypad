@@ -104,8 +104,7 @@ class WeigandTranslator:
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum
         a = self.accumulatedBits * 2
-        self.accumulatedBits = 0
-        self.accumulatedCount = 0
+        self.ClearAccumulatedBits(self)
         bits = (bin(a))[2:]
         if len(bits) < 37:
             zerosNeeded = 37 - len(bits)
