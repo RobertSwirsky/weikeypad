@@ -101,6 +101,9 @@ class WeigandTranslator:
         self.accumulatedCount = 0
         return True
                
+    def GetAccumulatedCount(self):
+        return self.accumulatedCount
+    
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum
         a = self.accumulatedBits * 2
@@ -209,7 +212,8 @@ if __name__ == "__main__":
                 bits = wt.CalculateParity(bits)
         # We get here if AccumulateBits returned false, we timeout
         # or we scanned in a badge (in which case any accumulated bits are thrown out).
-        if not timeout:
+        # don't send bits if the use just hit # or * (all zeros)
+        if not timeout and (bits != "0000000000000000000000000000000000001"):
             wt.Transmit(bits)
         else:
             wt.ClearAccumulatedBits()
