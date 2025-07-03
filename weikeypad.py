@@ -1,4 +1,4 @@
-from machine import Pin
+from machine import Pin, Timer
 import time
 import rp2
 from rp2 import PIO
@@ -75,7 +75,6 @@ class WeigandTranslator:
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=pin_OUT_0)
         self.smx.active(1)
         
-    
     def Transmit(self, bits):
         print(f"Transmit (%d) bits: %s" % (len(bits), bits))
         for b in bits:
@@ -96,12 +95,19 @@ class WeigandTranslator:
             if self.accumulatedCount >= 6:
                 return False
         return True
+    
+    def ClearAccumulatedBits(self):
+        self.accumulatedBits = 0
+        self.accumulatedCount = 0
+        return True
                
+    def GetAccumulatedCount(self):
+        return self.accumulatedCount
+    
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum
         a = self.accumulatedBits * 2
-        self.accumulatedBits = 0
-        self.accumulatedCount = 0
+        self.ClearAccumulatedBits()
         bits = (bin(a))[2:]
         if len(bits) < 37:
             zerosNeeded = 37 - len(bits)
@@ -122,10 +128,23 @@ class WeigandTranslator:
             bits = bits[:-1] + '1'
         return bits    
     
-    def Receive(self):
+    def Receive(self, timeout):
         bits = ""
-        print("Waiting for a word")
-        data = self.sm.get()				# wait for a bit detected from the FIFO
+        print(f"Waiting for a word, timeout = {timeout}")
+        if timeout:
+            start_time = time.ticks_ms()
+            while True:
+                if self.sm.rx_fifo() > 0:
+                    data = self.sm.get()
+                    break
+                else:
+                    # nothing in buffer -- see if we'eve timed out
+                    current_time = time.ticks_ms()
+                    elapsed_time = time.ticks_diff(current_time, start_time)
+                    if elapsed_time > 6000:
+                        return -1
+        else:
+            data = self.sm.get()				# blocking wait for a bit detected from the FIFO
         start_time = time.ticks_ms()
         elapsed_time = 0
         while True:
@@ -172,14 +191,33 @@ class WeigandTranslator:
 if __name__ == "__main__":
     wt = WeigandTranslator()
     while True:
-        bits = wt.Receive()
-        if len(bits) == 4:       # is it a digit
+        timeout = False
+        badge = False
+        bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
+        if len(bits) == 4:       # is it a digit 
             while wt.AccumulateBits(bits):
-                bits = wt.Receive()
-                pass
-            bits = wt.GetAccumulatedBits()
-            bits = wt.CalculateParity(bits)
-        wt.Transmit(bits)
+                bits = wt.Receive(timeout=True)       # timout in _n_ seconds if we stop getting digits
+                if (bits == -1):                      # we have a timeout
+                    timeout = True
+                    print("Timeout waiting for code")
+                    break
+                elif len(bits) > 4:
+                    # badge scan in the middle
+                    bits=wt.CalculateParity(bits)
+                    badge = True
+                    break
+            # if this is either a timeout or a badge, don't do this.
+            if not (timeout or badge):
+                bits = wt.GetAccumulatedBits()
+                bits = wt.CalculateParity(bits)
+        # We get here if AccumulateBits returned false, we timeout
+        # or we scanned in a badge (in which case any accumulated bits are thrown out).
+        # don't send bits if the use just hit # or * (all zeros)
+        if not timeout and (bits != "0000000000000000000000000000000000001"):
+            wt.Transmit(bits)
+        else:
+            wt.ClearAccumulatedBits()
+            print("timeout")
               
         
 
