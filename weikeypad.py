@@ -59,8 +59,8 @@ class WeigandTranslator:
     def __init__(self):
         # a bit is 40 microseconds wide, so we'll us a cycle rate of 1/2 microsecond for receiving
         # so we won't won't miss one. We may be able to slow this down
-        pin_IN_0 = Pin(27, Pin.IN, Pin.PULL_DOWN)
-        pin_IN_1 = Pin(28, Pin.IN, Pin.PULL_DOWN)
+        pin_IN_0 = Pin(27, Pin.IN, Pin.PULL_UP)
+        pin_IN_1 = Pin(28, Pin.IN, Pin.PULL_UP)
         # start on PIO 0
         self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin_IN_0)
         self.sm.active(1)
@@ -69,8 +69,8 @@ class WeigandTranslator:
         
         # for the transmit side, we will make the clock cycle rate 10 microseconds
         # so 4 cycles = 1 bit width
-        pin_OUT_0 = Pin(03, Pin.OUT)
-        pin_OUT_1 = Pin(04, Pin.OUT)
+        pin_OUT_0 = Pin(3, Pin.OUT)
+        pin_OUT_1 = Pin(4, Pin.OUT)
         # start on PIO 1
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=pin_OUT_0)
         self.smx.active(1)
@@ -184,8 +184,11 @@ class WeigandTranslator:
             parity_back = b % 2
             print(f"Parity bits should be %d and %d" % (parity_front, parity_back))
         else:
-            value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
-            print(f"Value = %s", (hex(value)))
+            if len(bits) > 1:
+                value = int(bits[:-1], 2)                # don't look at the last bit when calculating value
+                print(f"Value = %s", (hex(value)))
+            else:
+                print("STR: Just read one bit")
         return bits
        
 if __name__ == "__main__":
