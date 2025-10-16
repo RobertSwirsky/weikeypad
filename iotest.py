@@ -15,7 +15,7 @@ import time
     pins = []
     for i in gpio_pins:
         try:
-            p = Pin(i, Pin.IN, Pin.PULL_UP)
+            p = Pin(i, Pin.IN, Pin.PULL_DOWN)
             pins.append((i, p))
         except:
             # Ignore invalid or unavailable pins
