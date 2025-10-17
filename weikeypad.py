@@ -60,7 +60,7 @@ class WeigandTranslator:
         # a bit is 40 microseconds wide, so we'll us a cycle rate of 1/2 microsecond for receiving
         # so we won't won't miss one. We may be able to slow this down
         pin_IN_0 = Pin(26, Pin.IN, Pin.PULL_UP)
-        pin_IN_1 = Pin(27`, Pin.IN, Pin.PULL_UP)
+        pin_IN_1 = Pin(27, Pin.IN, Pin.PULL_UP)
         # start on PIO 0
         self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin_IN_0)
         self.sm.active(1)
