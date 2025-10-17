@@ -4,8 +4,6 @@ import rp2
 from rp2 import PIO
       
 if __name__ == "__main__":
-    from machine import Pin
-import time
 
     # List of GPIO pins available on the RP2040 (0–28)
     # Skip pins reserved for flash or special functions as needed.
