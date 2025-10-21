@@ -208,6 +208,7 @@ if __name__ == "__main__":
                     # badge scan in the middle
                     bits=wt.CalculateParity(bits)
                     badge = True
+                    wt.ClearAccumulatedBits()
                     break
             # if this is either a timeout or a badge, don't do this.
             if not (timeout or badge):
