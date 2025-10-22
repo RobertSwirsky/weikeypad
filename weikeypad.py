@@ -76,9 +76,12 @@ class WeigandTranslator:
         self.smx.active(1)
         
         # set the I/O for the LEDs and Beeper
-        self.reader_LED1 = Pin(26, Pin.Out)
-        self.reader_LED2 = Pin(27, Pin.Out)
-        self.reader_BEEP = Pin(14, Pin.Out)
+        self.reader_LED1 = Pin(15, Pin.OUT)
+        self.reader_LED2 = Pin(14, Pin.OUT)
+        self.reader_BEEP = Pin(13, Pin.OUT)
+        self.reader_BEEP.high()
+        self.reader_LED1.high()
+        self.reader_LED2.high()
         
     def Transmit(self, bits):
         print(f"Transmit (%d) bits: %s" % (len(bits), bits))
@@ -90,31 +93,31 @@ class WeigandTranslator:
         time.sleep(0.1)
         
     def TestBeep(self):
-        self.reader_BEEP.high()
-        sleep(0.25)
         self.reader_BEEP.low()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_BEEP.high()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_BEEP.low()
+        time.sleep(0.25)
+        self.reader_BEEP.high()
         
     def TestLED1(self):
-        self.reader_LED1.high()
-        sleep(0.25)
         self.reader_LED1.low()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_LED1.high()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_LED1.low()
+        time.sleep(0.25)
+        self.reader_LED1.high()
         
     def TestLED2(self):
-        self.reader_LED2.high()
-        sleep(0.25)
         self.reader_LED2.low()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_LED2.high()
-        sleep(0.25)
+        time.sleep(0.25)
         self.reader_LED2.low()
+        time.sleep(0.25)
+        self.reader_LED2.high()
    
     def AccumulateBits(self, bits):
         value = int(bits, 2)
@@ -254,9 +257,9 @@ if __name__ == "__main__":
         else:
             wt.ClearAccumulatedBits()
             print("timeout")
-        wt.TestBeep()
-        wt.TestLED1()
-        wt.TestLED2()
+        #wt.TestBeep()
+        #wt.TestLED1()
+        #wt.TestLED2()
               
         
 
