@@ -75,6 +75,11 @@ class WeigandTranslator:
         self.smx = rp2.StateMachine(4, tx_weigand, freq=100000, set_base=pin_OUT_0)
         self.smx.active(1)
         
+        # set the I/O for the LEDs and Beeper
+        self.reader_LED1 = Pin(26, Pin.Out)
+        self.reader_LED2 = Pin(27, Pin.Out)
+        self.reader_BEEP = Pin(14, Pin.Out)
+        
     def Transmit(self, bits):
         print(f"Transmit (%d) bits: %s" % (len(bits), bits))
         for b in bits:
@@ -84,6 +89,33 @@ class WeigandTranslator:
         # sleep a millisecond 
         time.sleep(0.1)
         
+    def TestBeep(self):
+        self.reader_BEEP.high()
+        sleep(0.25)
+        self.reader_BEEP.low()
+        sleep(0.25)
+        self.reader_BEEP.high()
+        sleep(0.25)
+        self.reader_BEEP.low()
+        
+    def TestLED1(self):
+        self.reader_LED1.high()
+        sleep(0.25)
+        self.reader_LED1.low()
+        sleep(0.25)
+        self.reader_LED1.high()
+        sleep(0.25)
+        self.reader_LED1.low()
+        
+    def TestLED2(self):
+        self.reader_LED2.high()
+        sleep(0.25)
+        self.reader_LED2.low()
+        sleep(0.25)
+        self.reader_LED2.high()
+        sleep(0.25)
+        self.reader_LED2.low()
+   
     def AccumulateBits(self, bits):
         value = int(bits, 2)
         if value > 9:
@@ -222,6 +254,9 @@ if __name__ == "__main__":
         else:
             wt.ClearAccumulatedBits()
             print("timeout")
+        wt.TestBeep()
+        wt.TestLED1()
+        wt.TestLED2()
               
         
 
