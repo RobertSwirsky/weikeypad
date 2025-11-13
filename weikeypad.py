@@ -82,6 +82,30 @@ class WeigandTranslator:
         self.reader_BEEP.high()
         self.reader_LED1.high()
         self.reader_LED2.high()
+
+        self.controller_LED1 = Pin(2, Pin.IN, Pin.PULL_UP)
+        self.controller_LED2 = Pin(1, Pin.IN, Pin.PULL_UP)
+        self.controller_BEEP = Pin(0, Pin.IN, Pin.PULL_UP)
+
+        self.controller_LED1.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.sync_output)
+        self.controller_LED2.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.sync_output)
+        self.controller_BEEP.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.sync_output)
+
+    def sync_output(self, pin):
+        if self.controller_BEEP.value() == 0:
+            self.reader_BEEP.low()
+        else:
+            self.reader_BEEP.high()
+
+        if self.controller_LED1.value() == 0:
+            self.reader_LED1.low()
+        else:
+            self.reader_LED1.high()
+
+        if self.controller_LED2.value() == 0:
+            self.reader_LED2.low()
+        else:
+            self.reader_LED2.high()
         
     def Transmit(self, bits):
         print(f"Transmit (%d) bits: %s" % (len(bits), bits))
