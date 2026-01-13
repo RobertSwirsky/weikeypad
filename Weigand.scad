@@ -24,7 +24,7 @@ paddingLeft  = 4;
 showOrientation = false;
 
 //  *** Snap Joins ***
-snapJoins   =   
+XsnapJoins   =   
 [
     [6, 5, yappLeft, yappRight]
    ,[pcbLength-6, 5, yappLeft, yappRight]
@@ -33,25 +33,25 @@ snapJoins   =
 
 connectors   =  
 [
-    [7, 7, standoffHeight
+    [12, 12, standoffHeight
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
      , yappCoordBox],
-   [ 7, pcbWidth + paddingRight + (7/2), standoffHeight
+   [ 12, pcbWidth + paddingRight -1, standoffHeight
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
      , yappCoordBox],
-   [ pcbLength + paddingFront + paddingBack - 2, pcbWidth + paddingRight + (7/2),standoffHeight
+   [ pcbLength + paddingFront + paddingBack -6, pcbWidth + paddingRight -2,standoffHeight
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
      , yappCoordBox],
-   [ pcbLength + paddingFront + paddingBack - 2, 7, standoffHeight,
+   [ pcbLength + paddingFront + paddingBack - 6, 12, standoffHeight,
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
