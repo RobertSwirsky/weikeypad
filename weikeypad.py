@@ -214,7 +214,13 @@ class WeigandTranslator:
                     if elapsed_time > 6000:
                         return -1
         else:
-            data = self.sm.get()				# blocking wait for a bit detected from the FIFO
+            while True:
+                if self.sm.rx_fifo() > 0:
+                    data = self.sm.get()				# blocking wait for a bit detected from the FIFO
+                    break
+                else:
+                    if self.tamp:
+                        return -2
         start_time = time.ticks_ms()
         elapsed_time = 0
         while True:
@@ -268,11 +274,9 @@ if __name__ == "__main__":
         timeout = False
         badge = False
         # Do we have a "Tamper"? Send "AAAA"
-        if wt.Tamp:
+        if wt.tamp:
             bits = '1010101010101010'   # "AAAA"
             bits = wt.CalculateParity(bits)
-            wt.Transmit(bits)
-            wt.Tamp = False
             break
         bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
         if len(bits) == 4:       # is it a digit 
@@ -282,27 +286,32 @@ if __name__ == "__main__":
                     timeout = True
                     print("Timeout waiting for code")
                     break
+                elif (bits == -2):
+                    print("Tamper waiting for code")
+                    bits = '1010101010101010'   # "AAAA"
+                    bits = wt.CalculateParity(bits)
+                    break
                 elif len(bits) > 4:
                     # badge scan in the middle
                     bits=wt.CalculateParity(bits)
                     badge = True
                     wt.ClearAccumulatedBits()
                     break
-            # if this is either a timeout or a badge, don't do this.
-            if not (timeout or badge):
+            # if this is either a timeout or a badge or a tamp, don't do this.
+            if not (timeout or badge or wt.tamp):
                 bits = wt.GetAccumulatedBits()
                 bits = wt.CalculateParity(bits)
         # We get here if AccumulateBits returned false, we timeout
         # or we scanned in a badge (in which case any accumulated bits are thrown out).
+        # or it's a tamper
         # don't send bits if the use just hit # or * (all zeros)
         if not timeout and (bits != "0000000000000000000000000000000000001"):
             wt.Transmit(bits)
         else:
             wt.ClearAccumulatedBits()
             print("timeout")
-        #wt.TestBeep()
-        #wt.TestLED1()
-        #wt.TestLED2()
+        wt.tamp = False
+
               
         
 
