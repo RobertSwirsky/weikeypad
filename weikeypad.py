@@ -169,7 +169,6 @@ class WeigandTranslator:
     def ClearAccumulatedBits(self):
         self.accumulatedBits = 0
         self.accumulatedCount = 0
-        self.tamp = false;
         return True
                
     def GetAccumulatedCount(self):
