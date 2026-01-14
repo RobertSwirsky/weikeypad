@@ -61,6 +61,13 @@ class WeigandTranslator:
         # so we won't won't miss one. We may be able to slow this down
         pin_IN_0 = Pin(26, Pin.IN, Pin.PULL_UP)
         pin_IN_1 = Pin(27, Pin.IN, Pin.PULL_UP)
+        self.pin_TAMP = Pin(28, Pin.IN, Pin.PULL_UP)
+        self.tamp = False
+        self.pin_TAMP.irq(
+            trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
+                     handler = self.pin_TAMP_isr
+                    )
+        
         # start on PIO 0
         self.sm = rp2.StateMachine(0, rx_weigand, freq=2000000, in_base=pin_IN_0)
         self.sm.active(1)
@@ -91,6 +98,10 @@ class WeigandTranslator:
         self.controller_LED2.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.sync_output)
         self.controller_BEEP.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.sync_output)
 
+    def pin_TAMP_isr(self, pin):
+        self.tamp = True
+        level = pin.value()
+        
     def sync_output(self, pin):
         if self.controller_BEEP.value() == 0:
             self.reader_BEEP.low()
@@ -158,6 +169,7 @@ class WeigandTranslator:
     def ClearAccumulatedBits(self):
         self.accumulatedBits = 0
         self.accumulatedCount = 0
+        self.tamp = false;
         return True
                
     def GetAccumulatedCount(self):
@@ -251,10 +263,18 @@ class WeigandTranslator:
         return bits
        
 if __name__ == "__main__":
+    bits = ""
     wt = WeigandTranslator()
     while True:
         timeout = False
         badge = False
+        # Do we have a "Tamper"? Send "AAAA"
+        if wt.Tamp:
+            bits = '1010101010101010'   # "AAAA"
+            bits = wt.CalculateParity(bits)
+            wt.Transmit(bits)
+            wt.Tamp = False
+            break
         bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
         if len(bits) == 4:       # is it a digit 
             while wt.AccumulateBits(bits):
