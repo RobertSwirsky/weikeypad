@@ -174,6 +174,17 @@ class WeigandTranslator:
     def GetAccumulatedCount(self):
         return self.accumulatedCount
     
+    def DoTamper(self):
+        print("DoTamper")
+        self.ClearAccumulatedBits()
+        self.AccumulateBits("1010")
+        self.AccumulateBits("1010")
+        self.AccumulateBits("1010")
+        self.AccumulateBits("1010")
+        bits = self.GetAccumulatedBits()
+        bits = self.CalculateParity(bits)
+        return bits
+    
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum
         a = self.accumulatedBits * 2
@@ -220,7 +231,7 @@ class WeigandTranslator:
                     break
                 else:
                     if self.tamp:
-                        return -2
+                        return self.DoTamper()
         start_time = time.ticks_ms()
         elapsed_time = 0
         while True:
@@ -275,8 +286,7 @@ if __name__ == "__main__":
         badge = False
         # Do we have a "Tamper"? Send "AAAA"
         if wt.tamp:
-            bits = '1010101010101010'   # "AAAA"
-            bits = wt.CalculateParity(bits)
+            bits = wt.DoTamper()
             break
         bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
         if len(bits) == 4:       # is it a digit 
@@ -287,9 +297,8 @@ if __name__ == "__main__":
                     print("Timeout waiting for code")
                     break
                 elif (bits == -2):
-                    print("Tamper waiting for code")
-                    bits = '1010101010101010'   # "AAAA"
-                    bits = wt.CalculateParity(bits)
+                    print("Tamper (2)")
+                    bits = wt.DoTamper()
                     break
                 elif len(bits) > 4:
                     # badge scan in the middle
