@@ -166,6 +166,13 @@ class WeigandTranslator:
                 return False
         return True
     
+    # No checking in this version for "out of band" signals (tamper, etc)
+    def AccumulateNondigitBits(self, bits):
+        value = int(bits, 2)
+        self.accumulatedBits = (self.accumulatedBits * 10) + value
+        self.accumulatedCount = self.accumulatedCount + 1
+        return True
+    
     def ClearAccumulatedBits(self):
         self.accumulatedBits = 0
         self.accumulatedCount = 0
@@ -177,12 +184,12 @@ class WeigandTranslator:
     def DoTamper(self):
         print("DoTamper")
         self.ClearAccumulatedBits()
-        self.AccumulateBits("1010")
-        self.AccumulateBits("1010")
-        self.AccumulateBits("1010")
-        self.AccumulateBits("1010")
+        # send F000911
+        code = ["1111", "0000", "0000", "0000", "1001", "0001", "0001"]
+        [ self.AccumulateNondigitBits(b) for b in code]
         bits = self.GetAccumulatedBits()
         bits = self.CalculateParity(bits)
+        print("Tamper bits are %s" % (bits))
         return bits
     
     def GetAccumulatedBits(self):
@@ -284,11 +291,12 @@ if __name__ == "__main__":
     while True:
         timeout = False
         badge = False
-        # Do we have a "Tamper"? Send "AAAA"
+        # Do we have a "Tamper"? 
         if wt.tamp:
             bits = wt.DoTamper()
-            break
-        bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
+            print ("Tamper bits %s" % (bits))
+        else:
+            bits = wt.Receive(timeout=False)              # nothing received yet, wait "forever"
         if len(bits) == 4:       # is it a digit 
             while wt.AccumulateBits(bits):
                 bits = wt.Receive(timeout=True)       # timout in _n_ seconds if we stop getting digits
@@ -297,7 +305,6 @@ if __name__ == "__main__":
                     print("Timeout waiting for code")
                     break
                 elif (bits == -2):
-                    print("Tamper (2)")
                     bits = wt.DoTamper()
                     break
                 elif len(bits) > 4:
@@ -323,5 +330,7 @@ if __name__ == "__main__":
 
               
         
+
+
 
 
