@@ -61,7 +61,7 @@ class WeigandTranslator:
         # so we won't won't miss one. We may be able to slow this down
         pin_IN_0 = Pin(26, Pin.IN, Pin.PULL_UP)
         pin_IN_1 = Pin(27, Pin.IN, Pin.PULL_UP)
-        self.pin_TAMP = Pin(28, Pin.IN, Pin.PULL_UP)
+        self.pin_TAMP = Pin(28, Pin.IN)
         self.tamp = False
         self.pin_TAMP.irq(
             trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING,
