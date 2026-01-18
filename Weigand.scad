@@ -38,25 +38,25 @@ connectors   =
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
-     , yappCoordBox],
+     , yappCoordBox, yappThroughLid],
    [ 12, pcbWidth + paddingRight -1, standoffHeight
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
-     , yappCoordBox],
+     , yappCoordBox,yappThroughLid],
    [ pcbLength + paddingFront + paddingBack -6, pcbWidth + paddingRight -2,standoffHeight
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
-     , yappCoordBox],
+     , yappCoordBox, yappThroughLid],
    [ pcbLength + paddingFront + paddingBack - 6, 12, standoffHeight,
      , 2.7           //-- diameter of the screw (add some slack)
      , 5             //-- the diameter of the screw head
      , 4.1           //-- the diameter of the insert
      , 9             //-- the outside diameter of the connector
-     , yappCoordBox],
+     , yappCoordBox, yappThroughLid],
      //-- use [0,0,0] of the PCB os origen //-- use [0,0,0] of the PCB os origen
 ];
 
