@@ -193,7 +193,7 @@ class WeigandTranslator:
         [ self.AccumulateNondigitBits(b) for b in code]
         bits = self.GetAccumulatedBits()
         bits = self.CalculateParity(bits)
-        print("Tamper Set bits are %s" % (bits))
+        print("Tamper bits are %s" % (bits))
         return bits
     
     
