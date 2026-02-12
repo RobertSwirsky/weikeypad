@@ -101,7 +101,7 @@ class WeigandTranslator:
     def pin_TAMP_isr(self, pin):
         self.tamp = True
         level = pin.value()
-        
+
     def sync_output(self, pin):
         if self.controller_BEEP.value() == 0:
             self.reader_BEEP.low()
@@ -182,15 +182,20 @@ class WeigandTranslator:
         return self.accumulatedCount
     
     def DoTamper(self):
-        print("DoTamper")
+        # is it set or clear?
+        tamperState = self.pin_TAMP.value()
+        print("Tamper is Restored" if tamperState == 1 else "Tamper is Set")
         self.ClearAccumulatedBits()
-        # send F000911
-        code = ["1111", "0000", "0000", "0000", "1001", "0001", "0001"]
+        # send F000911 if restored else F000912
+        code =  (["1111", "0000", "0000", "0000", "1001", "0001", "0001"]
+            if tamperState == 1
+            else ["1111", "0000", "0000", "0000", "1001", "0001", "0010"])
         [ self.AccumulateNondigitBits(b) for b in code]
         bits = self.GetAccumulatedBits()
         bits = self.CalculateParity(bits)
-        print("Tamper bits are %s" % (bits))
+        print("Tamper Set bits are %s" % (bits))
         return bits
+    
     
     def GetAccumulatedBits(self):
         # shift it right one more to make room for checksum

@@ -70,7 +70,7 @@ pcbStands = [
 cutoutsBack =   
 [
     [ (pcbWidth  ) / 2, 0,
-      10, 7, 0, yappRectangle, yappCenter]
+      10, 7, 5, yappCircle, yappCenter]
 ];
 
 cutoutsFront =   
